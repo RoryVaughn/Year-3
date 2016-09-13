@@ -7,11 +7,36 @@
 
 #include "Camera.h"
 #include <iostream>
+#include <vector>
 
 using glm::vec3;
 using glm::vec4;
 using glm::mat4;
 
+const int points = 75;
+std::vector<unsigned int> GenerateIndices(int nm, int np)
+{
+	std::vector<unsigned int> indices;
+	//j=np-1
+	//      
+	//2     5   8   11  14  17
+	//1     4   7   10  13  16
+	//0     3   6   9   12  15      
+	//  
+	for (unsigned int i = 0; i < nm; i++) //nm = 4
+	{
+		unsigned int start = i * np;
+		for (int j = 0; j < np; j++) //np = 3
+		{
+			unsigned int botR = (start + np + j);
+			unsigned int botL = (start + j);
+			indices.push_back(botL);
+			indices.push_back(botR);
+		}
+		indices.push_back(0xFFFF);
+	} //we copied the origin whenever we rotated around nm + 1 times so we dont need to get the end again
+	return indices;
+}
 
 
 SolarSystemApplication::SolarSystemApplication() 
@@ -26,17 +51,36 @@ SolarSystemApplication::~SolarSystemApplication() {
 
 bool SolarSystemApplication::generateGrid()
 {
+	
+	int r = 4.f;
+	float angle;
+	float pi = glm::pi<float>();
+	Vertex Vertices[points];
+	unsigned int Indices[points];
+	for (unsigned int i = 0; i < points; i++)
+		Indices[i] = i;
 
-	Vertex Vertices[4];
-	unsigned int Indices[4] = { 0,2,1,3 };
+	for (int a = 0; a < points; a++)
+	{
+		angle = (pi * a) / (points - 1);
+		Vertices[a].position = vec4(cos(angle) * r, sin(angle) * r, 0, 1);
+	}
+	//CreateHalfCircle(3,5);
+	//
+	//Vertices[0].color = vec4(1, 0, 0, 0);
+	//Vertices[1].color = vec4(0, 1, 0, 0);
+	//Vertices[2].color = vec4(0, 0, 1, 0);
+	//Vertices[3].color = vec4(0, 0, 0, 1);
+	//Vertices[4].color = vec4(0, 0, 0, 1);
+	/*unsigned int Indices[4] = { 0,2,1,3 };
 	Vertices[0].position = vec4(-5, 0, -5, 1);
 	Vertices[1].position = vec4(5, 0, -5, 1);
 	Vertices[2].position = vec4(-5, 0, 5, 1);
 	Vertices[3].position = vec4(5, 0, 5, 1);
-	Vertices[0].color = vec4(1, 0, 0, 1);
-	Vertices[1].color = vec4(0, 1, 0, 1);
-	Vertices[2].color = vec4(0, 0, 1, 1);
-	Vertices[3].color = vec4(1, 1, 1, 1);
+	Vertices[0].color = vec4(1, 0, 0, 0);
+	Vertices[1].color = vec4(0, 1, 0, 0);
+	Vertices[2].color = vec4(0, 0, 1, 0);
+	Vertices[3].color = vec4(0, 0, 0, 1);*/
 	// create and bind buffers to a vertex array object
 	glGenBuffers(1, &m_VBO);
 	glGenBuffers(1, &m_IBO);
@@ -45,15 +89,15 @@ bool SolarSystemApplication::generateGrid()
 	glBindVertexArray(m_VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(Vertex), Vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, points * sizeof(Vertex), Vertices, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(unsigned int), Indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, points * sizeof(unsigned int), Indices, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(vec4)));
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -159,7 +203,8 @@ void SolarSystemApplication::draw() {
 	glUniformMatrix4fv(matUniform, 1, GL_FALSE, glm::value_ptr(m_camera->getProjectionView()));
 	// draw quad
 	glBindVertexArray(m_VAO);
-	glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, 0);
+	glPointSize((5.f));
+	glDrawElements(GL_POINTS, points, GL_UNSIGNED_INT, (void*)0);
 }
 
 void SolarSystemApplication::inputCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
