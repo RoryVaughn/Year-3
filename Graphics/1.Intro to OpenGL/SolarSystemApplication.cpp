@@ -14,29 +14,29 @@ using glm::vec4;
 using glm::mat4;
 
 const int points = 75;
-std::vector<unsigned int> GenerateIndices(int nm, int np)
-{
-	std::vector<unsigned int> indices;
-	//j=np-1
-	//      
-	//2     5   8   11  14  17
-	//1     4   7   10  13  16
-	//0     3   6   9   12  15      
-	//  
-	for (unsigned int i = 0; i < nm; i++) //nm = 4
-	{
-		unsigned int start = i * np;
-		for (int j = 0; j < np; j++) //np = 3
-		{
-			unsigned int botR = (start + np + j);
-			unsigned int botL = (start + j);
-			indices.push_back(botL);
-			indices.push_back(botR);
-		}
-		indices.push_back(0xFFFF);
-	} //we copied the origin whenever we rotated around nm + 1 times so we dont need to get the end again
-	return indices;
-}
+//std::vector<unsigned int> GenerateIndices(int nm, int np)
+//{
+//	std::vector<unsigned int> indices;
+//	//j=np-1
+//	//      
+//	//2     5   8   11  14  17
+//	//1     4   7   10  13  16
+//	//0     3   6   9   12  15      
+//	//  
+//	for (unsigned int i = 0; i < nm; i++) //nm = 4
+//	{
+//		unsigned int start = i * np;
+//		for (int j = 0; j < np; j++) //np = 3
+//		{
+//			unsigned int botR = (start + np + j);
+//			unsigned int botL = (start + j);
+//			indices.push_back(botL);
+//			indices.push_back(botR);
+//		}
+//		indices.push_back(0xFFFF);
+//	} //we copied the origin whenever we rotated around nm + 1 times so we dont need to get the end again
+//	return indices;
+//}
 
 
 SolarSystemApplication::SolarSystemApplication() 
@@ -51,20 +51,41 @@ SolarSystemApplication::~SolarSystemApplication() {
 
 bool SolarSystemApplication::generateGrid()
 {
-	
+	int slices = 4;
 	int r = 4.f;
-	float angle;
+	float theta;
+	float phi;
+	float oldX;
+	float oldZ = 0;
+	double newX;
+	double newZ;
 	float pi = glm::pi<float>();
 	Vertex Vertices[points];
 	unsigned int Indices[points];
 	for (unsigned int i = 0; i < points; i++)
+	{
 		Indices[i] = i;
-
+	}
+	
 	for (int a = 0; a < points; a++)
 	{
-		angle = (pi * a) / (points - 1);
-		Vertices[a].position = vec4(cos(angle) * r, sin(angle) * r, 0, 1);
+		theta = (pi * a) / (points - 1);
+		oldX = (sin(theta) * r);
+		oldZ = 0;
+		Vertices[a].position = vec4(oldX, cos(theta) * r, oldZ, 1);
+		for (int b = 0; b < slices; b++)
+		{
+			phi = ((pi * b) / slices);
+			newX = (oldX * (cos(phi))) + (oldZ * (sin(phi)));
+			newZ = (oldZ * (cos(phi))) - (oldX * (sin(phi)));
+			Vertices[a].position = vec4(newX, cos(theta) * r, newZ, 1);
+		}
+		oldX = newX;
+		oldZ = newZ;
 	}
+	
+
+
 	//CreateHalfCircle(3,5);
 	//
 	//Vertices[0].color = vec4(1, 0, 0, 0);
