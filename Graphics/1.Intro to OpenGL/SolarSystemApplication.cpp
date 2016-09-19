@@ -13,7 +13,7 @@ using glm::vec3;
 using glm::vec4;
 using glm::mat4;
 
-const int points = 75;
+const int points = 95;
 //std::vector<unsigned int> GenerateIndices(int nm, int np)
 //{
 //	std::vector<unsigned int> indices;
@@ -51,11 +51,12 @@ SolarSystemApplication::~SolarSystemApplication() {
 
 bool SolarSystemApplication::generateGrid()
 {
-	int slices = 4;
+	int slices = 5;
 	int r = 4.f;
 	float theta;
 	float phi;
 	float oldX;
+	int c = 15;
 	float oldZ = 0;
 	double newX;
 	double newZ;
@@ -67,25 +68,39 @@ bool SolarSystemApplication::generateGrid()
 		Indices[i] = i;
 	}
 	
-	for (int a = 0; a < points; a++)
+	for (int a = 0; a < (points/6); a++)
 	{
-		theta = (pi * a) / (points - 1);
+		theta = (pi * a) / ((points/6) - 1);
 		oldX = (sin(theta) * r);
 		oldZ = 0;
 		Vertices[a].position = vec4(oldX, cos(theta) * r, oldZ, 1);
 		for (int b = 0; b < slices; b++)
 		{
-			phi = ((pi * b) / slices);
+			switch (b)
+			{
+				case 0: c = 15;
+					break;
+				case 1: c = 30;
+					break;
+				case 2: c = 45;
+					break;
+				case 3: c = 60;
+					break;
+				case 4: c = 75;
+					break;
+			}
+			phi = ((pi * 2 * b) / slices);
 			newX = (oldX * (cos(phi))) + (oldZ * (sin(phi)));
 			newZ = (oldZ * (cos(phi))) - (oldX * (sin(phi)));
-			Vertices[a].position = vec4(newX, cos(theta) * r, newZ, 1);
+			Vertices[a + c].position = vec4(newX, cos(theta) * r, newZ, 1);
 		}
 		oldX = newX;
 		oldZ = newZ;
 	}
 	
 
-
+	
+		// Process for all other cases.
 	//CreateHalfCircle(3,5);
 	//
 	//Vertices[0].color = vec4(1, 0, 0, 0);
