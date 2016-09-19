@@ -12,8 +12,19 @@
 using glm::vec3;
 using glm::vec4;
 using glm::mat4;
-
-const int points = 95;
+int slices = 12;
+const int points = 260 * 3;
+int f(int b)
+{
+	if (b == 0)
+	{
+		return ((points / (slices+1)));
+	}
+	if (b > 0)
+	{
+		return ((points / (slices+1)) * b);
+	}
+}
 //std::vector<unsigned int> GenerateIndices(int nm, int np)
 //{
 //	std::vector<unsigned int> indices;
@@ -51,12 +62,11 @@ SolarSystemApplication::~SolarSystemApplication() {
 
 bool SolarSystemApplication::generateGrid()
 {
-	int slices = 5;
 	int r = 4.f;
 	float theta;
 	float phi;
 	float oldX;
-	int c = 15;
+	int c = 20;
 	float oldZ = 0;
 	double newX;
 	double newZ;
@@ -68,31 +78,46 @@ bool SolarSystemApplication::generateGrid()
 		Indices[i] = i;
 	}
 	
-	for (int a = 0; a < (points/6); a++)
+	for (int a = 0; a < (points/(slices + 1)); a++)
 	{
-		theta = (pi * a) / ((points/6) - 1);
+		theta = (pi * a) / ((points/ (slices + 1)) - 1);
 		oldX = (sin(theta) * r);
 		oldZ = 0;
-		Vertices[a].position = vec4(oldX, cos(theta) * r, oldZ, 1);
+		Vertices[a].position = vec4(oldX * 2, (cos(theta) * r) * 2, oldZ * 2, 1);
 		for (int b = 0; b < slices; b++)
 		{
+			
 			switch (b)
 			{
-				case 0: c = 15;
+				case 0: c = 20 * 3;
 					break;
-				case 1: c = 30;
+				case 1: c = 40 * 3;
 					break;
-				case 2: c = 45;
+				case 2: c = 60 * 3;
 					break;
-				case 3: c = 60;
+				case 3: c = 80 * 3;
 					break;
-				case 4: c = 75;
+				case 4: c = 100 * 3;
+					break;
+				case 5: c = 120 * 3;
+					break;
+				case 6: c = 140 * 3;
+					break;
+				case 7: c = 160 * 3;
+					break;
+				case 8: c = 180 * 3;
+					break;
+				case 9: c = 200 * 3;
+					break;
+				case 10: c = 220 * 3;
+					break;
+				case 11: c = 240 * 3;
 					break;
 			}
 			phi = ((pi * 2 * b) / slices);
 			newX = (oldX * (cos(phi))) + (oldZ * (sin(phi)));
 			newZ = (oldZ * (cos(phi))) - (oldX * (sin(phi)));
-			Vertices[a + c].position = vec4(newX, cos(theta) * r, newZ, 1);
+			Vertices[a + c].position = vec4(newX * 2, (cos(theta) * r) * 2, newZ * 2, 1);
 		}
 		oldX = newX;
 		oldZ = newZ;
@@ -241,6 +266,8 @@ void SolarSystemApplication::draw() {
 	glBindVertexArray(m_VAO);
 	glPointSize((5.f));
 	glDrawElements(GL_POINTS, points, GL_UNSIGNED_INT, (void*)0);
+	//GL_POINTS
+	//GL_TRIANGLE_STRIP
 }
 
 void SolarSystemApplication::inputCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
