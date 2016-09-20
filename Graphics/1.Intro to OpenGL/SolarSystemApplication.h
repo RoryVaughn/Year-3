@@ -2,6 +2,7 @@
 
 #include "BaseApplication.h"
 #include <glm/vec4.hpp>
+#include <vector>
 //#include <glm/mat4x2.hpp>
 //#include "gl_core_4_4.h"
 
@@ -14,6 +15,7 @@ public:
 	
 	SolarSystemApplication();
 	virtual ~SolarSystemApplication();
+	std::vector<glm::vec4> genSemiCircle(const int);
 	bool generateGrid();
 	bool CreateShader();
 	virtual bool startup();
@@ -27,8 +29,8 @@ public:
 	
 private:
 	struct Vertex {
-		glm::vec4 position;
-		glm::vec4 color;
+		std::vector<glm::vec4> position;
+		std::vector<glm::vec4> color;
 	};
 	Camera*		m_camera;
 	

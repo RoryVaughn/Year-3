@@ -12,18 +12,20 @@
 using glm::vec3;
 using glm::vec4;
 using glm::mat4;
-int slices = 12;
-const int points = 260 * 3;
-int f(int b)
-{
-	if (b == 0)
-	{
-		return ((points / (slices+1)));
-	}
+
+int slices = 10;
+const int M_points = 10;
+int r = 4.f;
+float theta;
+float oldX = (sin(theta) * r);
+float oldZ = 0;
+float pi = glm::pi<float>();
+int addGhost(int b)
+{		
 	if (b > 0)
-	{
-		return ((points / (slices+1)) * b);
-	}
+		return (M_points / (slices+1) * b);
+	
+	return M_points / (slices+1);
 }
 //std::vector<unsigned int> GenerateIndices(int nm, int np)
 //{
@@ -60,73 +62,84 @@ SolarSystemApplication::~SolarSystemApplication() {
 	
 }
 
+std::vector<glm::vec4> SolarSystemApplication::genSemiCircle(const int points)
+{
+	std::vector<glm::vec4> Vertices[M_points];
+	for (int firstSlice = 0; firstSlice < points; firstSlice++)
+	{
+		theta = (pi * firstSlice) / (points / (slices + 1));
+		oldX = (sin(theta) * r);
+		oldZ = 0;
+		//Vertices[points] = vec4(oldX * 2, cos(theta) * r * 2, oldZ, 1);
+	}
+	return Vertices[points];
+}
+
 bool SolarSystemApplication::generateGrid()
 {
 	int r = 4.f;
 	float theta;
 	float phi;
 	float oldX;
-	int c = 20;
+	int v2SliceIndex = 1;
 	float oldZ = 0;
 	double newX;
 	double newZ;
 	float pi = glm::pi<float>();
-	Vertex Vertices[points];
-	unsigned int Indices[points];
-	for (unsigned int i = 0; i < points; i++)
+	unsigned int Indices[M_points];
+	for (unsigned int i = 0; i < M_points; i++)
 	{
 		Indices[i] = i;
 	}
 	
-	for (int a = 0; a < (points/(slices + 1)); a++)
-	{
-		theta = (pi * a) / ((points/ (slices + 1)) - 1);
-		oldX = (sin(theta) * r);
-		oldZ = 0;
-		Vertices[a].position = vec4(oldX * 2, (cos(theta) * r) * 2, oldZ * 2, 1);
-		for (int b = 0; b < slices; b++)
+	
+
+
+		/*for (int sliceIndex = 0; sliceIndex < slices; sliceIndex++)
 		{
 			
-			switch (b)
+			switch (sliceIndex)
 			{
-				case 0: c = 20 * 3;
+				case 0: v2SliceIndex = 20;
 					break;
-				case 1: c = 40 * 3;
+				case 1: v2SliceIndex = 40;
 					break;
-				case 2: c = 60 * 3;
+				case 2: v2SliceIndex = 60 * 3;
 					break;
-				case 3: c = 80 * 3;
+				case 3: v2SliceIndex = 80 * 3;
 					break;
-				case 4: c = 100 * 3;
+				case 4: v2SliceIndex = 100 * 3;
 					break;
-				case 5: c = 120 * 3;
+				case 5: v2SliceIndex = 120 * 3;
 					break;
-				case 6: c = 140 * 3;
+				case 6: v2SliceIndex = 140 * 3;
 					break;
-				case 7: c = 160 * 3;
+				case 7: v2SliceIndex = 160 * 3;
 					break;
-				case 8: c = 180 * 3;
+				case 8: v2SliceIndex = 180 * 3;
 					break;
-				case 9: c = 200 * 3;
+				case 9: v2SliceIndex = 200 * 3;
 					break;
-				case 10: c = 220 * 3;
+				case 10: v2SliceIndex = 220 * 3;
 					break;
-				case 11: c = 240 * 3;
+				case 11: v2SliceIndex = 240 * 3;
+					break;
+				default: printf("default case reached");
 					break;
 			}
-			phi = ((pi * 2 * b) / slices);
+			phi = ((pi * 2 * sliceIndex) / slices);
 			newX = (oldX * (cos(phi))) + (oldZ * (sin(phi)));
 			newZ = (oldZ * (cos(phi))) - (oldX * (sin(phi)));
-			Vertices[a + c].position = vec4(newX * 2, (cos(theta) * r) * 2, newZ * 2, 1);
+			Vertices[firstSlice + v2SliceIndex].position = vec4(newX * 2, (cos(theta) * r) * 2, newZ * 2, 1);
 		}
 		oldX = newX;
-		oldZ = newZ;
-	}
+		oldZ = newZ;*/
+	
 	
 
 	
 		// Process for all other cases.
-	//CreateHalfCircle(3,5);
+	
 	//
 	//Vertices[0].color = vec4(1, 0, 0, 0);
 	//Vertices[1].color = vec4(0, 1, 0, 0);
@@ -150,10 +163,10 @@ bool SolarSystemApplication::generateGrid()
 	glBindVertexArray(m_VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, points * sizeof(Vertex), Vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, M_points * sizeof(Vertex), Indices, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, points * sizeof(unsigned int), Indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, M_points * sizeof(unsigned int), Indices, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
@@ -265,7 +278,7 @@ void SolarSystemApplication::draw() {
 	// draw quad
 	glBindVertexArray(m_VAO);
 	glPointSize((5.f));
-	glDrawElements(GL_POINTS, points, GL_UNSIGNED_INT, (void*)0);
+	glDrawElements(GL_POINTS, M_points, GL_UNSIGNED_INT, (void*)0);
 	//GL_POINTS
 	//GL_TRIANGLE_STRIP
 }
