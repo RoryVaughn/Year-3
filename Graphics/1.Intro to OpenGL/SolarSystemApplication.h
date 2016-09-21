@@ -6,6 +6,10 @@
 //#include <glm/mat4x2.hpp>
 //#include "gl_core_4_4.h"
 
+struct Vertex {
+	glm::vec4 position;
+	glm::vec4 color;
+};
 
 // forward declared to reduce dependencies
 class Camera;
@@ -15,7 +19,7 @@ public:
 	
 	SolarSystemApplication();
 	virtual ~SolarSystemApplication();
-	std::vector<glm::vec4> genSemiCircle(const int);
+	Vertex* genSemiCircle(const int);
 	bool generateGrid();
 	bool CreateShader();
 	virtual bool startup();
@@ -28,10 +32,7 @@ public:
 	// our vertex and index buffers
 	
 private:
-	struct Vertex {
-		std::vector<glm::vec4> position;
-		std::vector<glm::vec4> color;
-	};
+	
 	Camera*		m_camera;
 	
 	// we can toggle the way the earth orbits the sun,

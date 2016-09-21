@@ -62,30 +62,24 @@ SolarSystemApplication::~SolarSystemApplication() {
 	
 }
 
-std::vector<glm::vec4> SolarSystemApplication::genSemiCircle(const int points)
+Vertex* SolarSystemApplication::genSemiCircle(const int points)
 {
-	std::vector<glm::vec4> Vertices[M_points];
+	Vertex* Vertices = new Vertex[points];
+
 	for (int firstSlice = 0; firstSlice < points; firstSlice++)
 	{
-		theta = (pi * firstSlice) / (points / (slices + 1));
-		oldX = (sin(theta) * r);
-		oldZ = 0;
-		//Vertices[points] = vec4(oldX * 2, cos(theta) * r * 2, oldZ, 1);
+		theta = pi * firstSlice / (slices + 1);
+		Vertices[firstSlice].position = vec4(r * sin(theta),r * cos(theta),0,1);
+		Vertices[firstSlice].color = vec4(0,0,255,1);
 	}
-	return Vertices[points];
+	return Vertices;
 }
 
 bool SolarSystemApplication::generateGrid()
 {
-	int r = 4.f;
-	float theta;
-	float phi;
-	float oldX;
-	int v2SliceIndex = 1;
-	float oldZ = 0;
-	double newX;
-	double newZ;
-	float pi = glm::pi<float>();
+	Vertex* Verts = new Vertex[M_points];
+	Verts = genSemiCircle(M_points);
+
 	unsigned int Indices[M_points];
 	for (unsigned int i = 0; i < M_points; i++)
 	{
@@ -162,9 +156,11 @@ bool SolarSystemApplication::generateGrid()
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
 
+	//Buffer Vertexes
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, M_points * sizeof(Vertex), Indices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, M_points * sizeof(Vertex), Verts , GL_STATIC_DRAW);
 
+	//Buffer indicies
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, M_points * sizeof(unsigned int), Indices, GL_STATIC_DRAW);
 
