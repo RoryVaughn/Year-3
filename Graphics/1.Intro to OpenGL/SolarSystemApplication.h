@@ -20,6 +20,7 @@ public:
 	SolarSystemApplication();
 	virtual ~SolarSystemApplication();
 	Vertex* genSemiCircle(const int);
+	Vertex* latheSphere(Vertex*,int meridians);
 	bool generateGrid();
 	bool CreateShader();
 	virtual bool startup();
@@ -42,4 +43,8 @@ private:
 	unsigned int m_VBO;
 	unsigned int m_IBO;
 	unsigned int m_programID;
+	int m_slices = 10;
+	static const int m_points = 100;
+	float r = 4.f;
+	unsigned int m_indices[m_points];
 };

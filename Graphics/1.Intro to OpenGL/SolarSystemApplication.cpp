@@ -13,44 +13,6 @@ using glm::vec3;
 using glm::vec4;
 using glm::mat4;
 
-int slices = 10;
-const int M_points = 10;
-int r = 4.f;
-float theta;
-float oldX = (sin(theta) * r);
-float oldZ = 0;
-float pi = glm::pi<float>();
-int addGhost(int b)
-{		
-	if (b > 0)
-		return (M_points / (slices+1) * b);
-	
-	return M_points / (slices+1);
-}
-//std::vector<unsigned int> GenerateIndices(int nm, int np)
-//{
-//	std::vector<unsigned int> indices;
-//	//j=np-1
-//	//      
-//	//2     5   8   11  14  17
-//	//1     4   7   10  13  16
-//	//0     3   6   9   12  15      
-//	//  
-//	for (unsigned int i = 0; i < nm; i++) //nm = 4
-//	{
-//		unsigned int start = i * np;
-//		for (int j = 0; j < np; j++) //np = 3
-//		{
-//			unsigned int botR = (start + np + j);
-//			unsigned int botL = (start + j);
-//			indices.push_back(botL);
-//			indices.push_back(botR);
-//		}
-//		indices.push_back(0xFFFF);
-//	} //we copied the origin whenever we rotated around nm + 1 times so we dont need to get the end again
-//	return indices;
-//}
-
 
 SolarSystemApplication::SolarSystemApplication() 
 	: m_camera(nullptr),
@@ -66,28 +28,51 @@ Vertex* SolarSystemApplication::genSemiCircle(const int points)
 {
 	Vertex* Vertices = new Vertex[points];
 
-	for (int firstSlice = 0; firstSlice < points; firstSlice++)
+	for (int Vert = 0; Vert < points/m_slices; Vert++)
 	{
-		theta = pi * firstSlice / (slices + 1);
-		Vertices[firstSlice].position = vec4(r * sin(theta),r * cos(theta),0,1);
-		Vertices[firstSlice].color = vec4(0,0,255,1);
+		float theta =  (glm::pi<float>() * Vert) / (m_slices - 1);
+		Vertices[Vert].position = vec4(r * sin(theta),r * cos(theta),0,1);
+		Vertices[Vert].color = vec4(0,0,255,1);
 	}
 	return Vertices;
 }
 
+Vertex * SolarSystemApplication::latheSphere(Vertex* Verts,int meridians)
+{
+	Verts = new Vertex[m_points];
+	for (int currentSlice = 0; currentSlice < meridians; currentSlice++)
+	{
+		float theta = glm::pi<float>() * m_points / (m_slices - 1);
+		float oldX = (sin(theta) * r);
+		float oldZ = 0;
+		float phi = ((glm::pi<float>() * 2 * currentSlice) / meridians);
+		float newX = oldX * cos(phi) + oldZ * sin(phi);
+		float newZ = oldZ * cos(phi) - oldX * sin(phi);
+		for (int currentPoint = 0; currentPoint < m_points;currentPoint++)
+		{
+			
+			Verts[currentPoint].position = vec4(newX, (cos(theta) * r), newZ, 1);
+			Verts[currentPoint].position = vec4(newX, (cos(theta) * r), newZ, 1);
+		}
+		phi = ((glm::pi<float>() * 2 * currentSlice) / meridians);
+		newX = oldX * cos(phi) + oldZ * sin(phi);
+		newZ = oldZ * cos(phi) - oldX * sin(phi);
+		oldX = newX;
+		oldZ = newZ;
+	}
+	return Verts;
+}
+
 bool SolarSystemApplication::generateGrid()
 {
-	Vertex* Verts = new Vertex[M_points];
-	Verts = genSemiCircle(M_points);
+	for (unsigned int i = 0; i < m_points; i++)
+		m_indices[i] = i;
 
-	unsigned int Indices[M_points];
-	for (unsigned int i = 0; i < M_points; i++)
-	{
-		Indices[i] = i;
-	}
+	Vertex * Verts = new Vertex[m_points];
+	Vertex * SphereVerts = new Vertex[m_points * m_slices];
+	Verts = genSemiCircle(m_points);
+	SphereVerts = latheSphere(Verts,m_slices);
 	
-	
-
 
 		/*for (int sliceIndex = 0; sliceIndex < slices; sliceIndex++)
 		{
@@ -127,13 +112,8 @@ bool SolarSystemApplication::generateGrid()
 			Vertices[firstSlice + v2SliceIndex].position = vec4(newX * 2, (cos(theta) * r) * 2, newZ * 2, 1);
 		}
 		oldX = newX;
-		oldZ = newZ;*/
-	
-	
-
-	
+		oldZ = newZ;*/	
 		// Process for all other cases.
-	
 	//
 	//Vertices[0].color = vec4(1, 0, 0, 0);
 	//Vertices[1].color = vec4(0, 1, 0, 0);
@@ -158,11 +138,11 @@ bool SolarSystemApplication::generateGrid()
 
 	//Buffer Vertexes
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, M_points * sizeof(Vertex), Verts , GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, m_points * sizeof(Vertex), Verts , GL_STATIC_DRAW);
 
 	//Buffer indicies
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, M_points * sizeof(unsigned int), Indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_points * sizeof(unsigned int), m_indices, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
@@ -274,7 +254,7 @@ void SolarSystemApplication::draw() {
 	// draw quad
 	glBindVertexArray(m_VAO);
 	glPointSize((5.f));
-	glDrawElements(GL_POINTS, M_points, GL_UNSIGNED_INT, (void*)0);
+	glDrawElements(GL_POINTS, m_points, GL_UNSIGNED_INT, (void*)0);
 	//GL_POINTS
 	//GL_TRIANGLE_STRIP
 }
