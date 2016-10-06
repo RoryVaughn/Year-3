@@ -45,6 +45,7 @@ private:
 	unsigned int m_programID;
 	int m_slices = 10;
 	static const int m_points = 100;
+	int m_semi = m_points / m_slices;
 	float r = 4.f;
 	unsigned int m_indices[m_points];
 };

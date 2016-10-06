@@ -26,21 +26,22 @@ SolarSystemApplication::~SolarSystemApplication() {
 
 Vertex* SolarSystemApplication::genSemiCircle(const int points)
 {
-	Vertex* Vertices = new Vertex[points];
+	m_semi = points / m_slices;
+	Vertex* Vertices = new Vertex[m_semi];
 
-	for (int Vert = 0; Vert < points/m_slices; Vert++)
+	for (int Vert = 0; Vert < m_semi; ++Vert)
 	{
 		float theta =  (glm::pi<float>() * Vert) / (m_slices - 1);
 		Vertices[Vert].position = vec4(r * sin(theta),r * cos(theta),0,1);
-		Vertices[Vert].color = vec4(0,0,255,1);
+		Vertices[Vert].color = vec4(0,1,255,1);
 	}
 	return Vertices;
 }
 
-Vertex * SolarSystemApplication::latheSphere(Vertex* Verts,int meridians)
+Vertex * SolarSystemApplication::latheSphere(Vertex* Circle,int meridians)
 {
-	Verts = new Vertex[m_points];
-	for (int currentSlice = 0; currentSlice < meridians; currentSlice++)
+	Circle = new Vertex[m_points];
+	for (int currentSlice = 0; currentSlice < meridians; ++currentSlice)
 	{
 		float theta = glm::pi<float>() * m_points / (m_slices - 1);
 		float oldX = (sin(theta) * r);
@@ -48,11 +49,9 @@ Vertex * SolarSystemApplication::latheSphere(Vertex* Verts,int meridians)
 		float phi = ((glm::pi<float>() * 2 * currentSlice) / meridians);
 		float newX = oldX * cos(phi) + oldZ * sin(phi);
 		float newZ = oldZ * cos(phi) - oldX * sin(phi);
-		for (int currentPoint = 0; currentPoint < m_points;currentPoint++)
+		for (int currentPoint = 0; currentPoint < m_points ; ++currentPoint)
 		{
-			
-			Verts[currentPoint].position = vec4(newX, (cos(theta) * r), newZ, 1);
-			Verts[currentPoint].position = vec4(newX, (cos(theta) * r), newZ, 1);
+			Circle[currentPoint].position = vec4(newX, (cos(theta) * r), newZ, 1);
 		}
 		phi = ((glm::pi<float>() * 2 * currentSlice) / meridians);
 		newX = oldX * cos(phi) + oldZ * sin(phi);
@@ -60,18 +59,18 @@ Vertex * SolarSystemApplication::latheSphere(Vertex* Verts,int meridians)
 		oldX = newX;
 		oldZ = newZ;
 	}
-	return Verts;
+	return Circle;
 }
 
 bool SolarSystemApplication::generateGrid()
 {
-	for (unsigned int i = 0; i < m_points; i++)
+	for (unsigned int i = 0; i < m_semi; i++)
 		m_indices[i] = i;
 
-	Vertex * Verts = new Vertex[m_points];
-	Vertex * SphereVerts = new Vertex[m_points * m_slices];
-	Verts = genSemiCircle(m_points);
-	SphereVerts = latheSphere(Verts,m_slices);
+	Vertex * Circle = new Vertex[m_points];
+	Vertex * sphereVerts = new Vertex[m_points];
+	Circle = genSemiCircle(m_points);
+	//sphereVerts = latheSphere(Circle,m_slices);
 	
 
 		/*for (int sliceIndex = 0; sliceIndex < slices; sliceIndex++)
@@ -113,41 +112,26 @@ bool SolarSystemApplication::generateGrid()
 		}
 		oldX = newX;
 		oldZ = newZ;*/	
-		// Process for all other cases.
-	//
-	//Vertices[0].color = vec4(1, 0, 0, 0);
-	//Vertices[1].color = vec4(0, 1, 0, 0);
-	//Vertices[2].color = vec4(0, 0, 1, 0);
-	//Vertices[3].color = vec4(0, 0, 0, 1);
-	//Vertices[4].color = vec4(0, 0, 0, 1);
-	/*unsigned int Indices[4] = { 0,2,1,3 };
-	Vertices[0].position = vec4(-5, 0, -5, 1);
-	Vertices[1].position = vec4(5, 0, -5, 1);
-	Vertices[2].position = vec4(-5, 0, 5, 1);
-	Vertices[3].position = vec4(5, 0, 5, 1);
-	Vertices[0].color = vec4(1, 0, 0, 0);
-	Vertices[1].color = vec4(0, 1, 0, 0);
-	Vertices[2].color = vec4(0, 0, 1, 0);
-	Vertices[3].color = vec4(0, 0, 0, 1);*/
+	glGenVertexArrays(1, &m_VAO);
+	glBindVertexArray(m_VAO);
 	// create and bind buffers to a vertex array object
 	glGenBuffers(1, &m_VBO);
 	glGenBuffers(1, &m_IBO);
 
-	glGenVertexArrays(1, &m_VAO);
-	glBindVertexArray(m_VAO);
+
 
 	//Buffer Vertexes
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, m_points * sizeof(Vertex), Verts , GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER,  sizeof(Vertex) * m_points, Circle , GL_STATIC_DRAW);
 
 	//Buffer indicies
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_points * sizeof(unsigned int), m_indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * m_points , m_indices, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), ((char*)0) + 16);
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
