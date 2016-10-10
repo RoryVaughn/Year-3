@@ -14,13 +14,15 @@ struct Vertex {
 // forward declared to reduce dependencies
 class Camera;
 
-class SolarSystemApplication : public BaseApplication {
+class Geometry : public BaseApplication {
 public:
 	
-	SolarSystemApplication();
-	virtual ~SolarSystemApplication();
+	Geometry();
+	virtual ~Geometry();
 	Vertex* genSemiCircle(const int);
 	Vertex* latheSphere(Vertex*,int meridians);
+	bool generateSphere();
+	bool generateCube();
 	bool generateGrid();
 	bool CreateShader();
 	virtual bool startup();
@@ -42,6 +44,12 @@ private:
 	unsigned int m_VAO;
 	unsigned int m_VBO;
 	unsigned int m_IBO;
+	unsigned int m_sVAO;
+	unsigned int m_sVBO;
+	unsigned int m_sIBO;
+	unsigned int m_cVAO;
+	unsigned int m_cVBO;
+	unsigned int m_cIBO;
 	unsigned int m_programID;
 	int m_slices = 10;
 	static const int m_points = 100;
